@@ -7,10 +7,10 @@ authors = [
 ]
 dependencies = [
     "torch>=2.0.0",
-    "numpy>=1.20.0",
+    "numpy>=1.26.0",
     "typing-extensions>=4.0.0",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = ["machine learning", "metrics", "pytorch", "rankme", "evaluation"]
@@ -20,7 +20,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -75,7 +74,7 @@ dev = [
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py39']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -99,7 +98,7 @@ force_single_line = false
 known_first_party = ["rankme"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
