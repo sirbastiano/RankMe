@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1169.68 397.19">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        font-size: 145.31px;
+      }
+
+      .cls-2, .cls-3 {
+        font-family: NotesStyle-BoldTf, NotesStyle-BoldTf;
+        font-weight: 700;
+      }
+
+      .cls-4 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        font-size: 73.2px;
+      }
+
+      .cls-5 {
+        fill: #f7931e;
+      }
+
+      .cls-6 {
+        fill: #666;
+        opacity: .25;
+      }
+
+      .cls-7 {
+        fill: none;
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: 9px;
+      }
+
+      .cls-8 {
+        letter-spacing: -.09em;
+      }
+
+      .cls-9 {
+        letter-spacing: -.1em;
+      }
+
+      .cls-10 {
+        letter-spacing: -.08em;
+      }
+
+      .cls-11 {
+        letter-spacing: -.07em;
+      }
+
+      .cls-12 {
+        letter-spacing: 0em;
+      }
+    </style>
+  </defs>
+  <g>
+    <text class="cls-2" transform="translate(388.6 183.09)"><tspan x="0" y="0">RANKME</tspan></text>
+    <text class="cls-3" transform="translate(393.44 322.1)"><tspan x="0" y="0">DEE</tspan><tspan class="cls-12" x="119.31" y="0">P</tspan><tspan class="cls-1" x="161.03" y="0" xml:space="preserve"> LEARNING </tspan><tspan class="cls-10" x="529.94" y="0">MET</tspan><tspan class="cls-11" x="647.78" y="0">R</tspan><tspan class="cls-9" x="684.38" y="0">I</tspan><tspan class="cls-8" x="709.63" y="0">CS</tspan></text>
+  </g>
+  <g>
+    <g>
+      <g>
+        <g>
+          <polygon class="cls-4" points="20.53 220.52 26.01 89.23 142.45 28.32 253.42 98.7 247.95 230 131.5 290.91 20.53 220.52"/>
+          <path d="M142.26,32.93l107.07,67.91-5.28,126.68-112.35,58.77L24.63,218.38l5.28-126.68,112.35-58.77M142.64,23.7L22.11,86.75l-5.66,135.91,114.87,72.86,120.53-63.05,5.66-135.91L142.64,23.7h0Z"/>
+        </g>
+        <circle cx="142.64" cy="23.7" r="23.7"/>
+        <circle cx="23.7" cy="86" r="23.7"/>
+        <circle cx="246.2" cy="228.9" r="23.7"/>
+        <circle cx="260.05" cy="98.18" r="23.7"/>
+        <circle cx="25.16" cy="220.08" r="23.7"/>
+        <circle cx="135.1" cy="295.18" r="23.7"/>
+        <polyline class="cls-7" points="22.11 86.75 246.2 228.9 18.71 224.11 260.05 98.18 135.1 295.18 142.64 23.7 20.11 216.88"/>
+      </g>
+      <rect class="cls-5" x="6" y="262.13" width="38.32" height="135.05"/>
+      <rect class="cls-5" x="115.94" y="337" width="38.32" height="60.19"/>
+      <rect class="cls-5" x="171.49" y="350.31" width="38.32" height="46.88"/>
+      <rect class="cls-5" x="60.97" y="298.08" width="38.32" height="99.11"/>
+      <rect class="cls-5" x="227.04" y="368.32" width="38.32" height="28.87"/>
+      <line class="cls-7" x1="142.64" y1="33.6" x2="251.85" y2="232.48"/>
+    </g>
+    <polyline class="cls-6" points="139.38 159.44 260.05 98.18 142.64 23.7 22.11 86.75"/>
+  </g>
+</svg>

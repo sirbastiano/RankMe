@@ -5,7 +5,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A comprehensive PyTorch-based metrics library for machine learning tasks, featuring the RankMe score for feature learning evaluation alongside standard classification and regression metrics.
+<p align="center">
+    <img src="docs/RANKME.svg" alt="RankMe logo" width="440" />
+</p>
+
+<p align="center">
+    <em>A comprehensive PyTorch-based metrics library for machine learning tasks, featuring the RankMe score for feature learning evaluation alongside standard classification and regression metrics.</em>
+</p>
+
 
 ## Features
 
