@@ -1,9 +1,10 @@
 import time
 import torch
 import torch.nn as nn
+from typing import Any, Dict, Optional, Tuple
+
 from rankme.base import StatelessMetric
 from thop import profile
-from typing import Any, Dict, Optional, Tuple
 
 
 def _get_param_device(model: nn.Module) -> torch.device:
