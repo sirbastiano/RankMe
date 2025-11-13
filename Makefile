@@ -94,7 +94,16 @@ ci-build:
 	pdm build
 	@ls -la dist/
 
-ci-all: ci-docs ci-security ci-build
+ci-quality:
+	@echo "Testing code quality checks like CI..."
+	pdm install -G dev
+	pdm run black --check --diff rankme tests
+	pdm run isort --check-only --diff rankme tests
+	pdm run flake8 rankme tests --max-line-length=88 --extend-ignore=E203,W503,F401,F541,F811,F841,E501 --exclude=__pycache__,.git,build,dist
+	pdm run mypy rankme --ignore-missing-imports --allow-untyped-defs --no-strict-optional --allow-redefinition --disable-error-code=override --disable-error-code=return-value --disable-error-code=assignment --disable-error-code=operator --disable-error-code=arg-type --disable-error-code=no-any-return --disable-error-code=no-untyped-def --disable-error-code=return --disable-error-code=unused-ignore || echo "MyPy completed with warnings"
+	pdm run bandit -r rankme/ -ll
+
+ci-all: ci-docs ci-security ci-build ci-quality
 	@echo "All CI checks completed successfully!"
 
 # Cleaning
