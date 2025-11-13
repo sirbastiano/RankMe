@@ -1,0 +1,71 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+
+    - name: Check code formatting with black
+      run: |
+        pdm run black --check --diff rankme tests
+
+    - name: Check import sorting with isort
+      run: |
+        pdm run isort --check-only --diff rankme tests
+
+    - name: Lint with flake8
+      run: |
+        pdm run flake8 rankme tests
+
+    - name: Type check with mypy
+      run: |
+        pdm run mypy rankme
+
+    - name: Check for common security issues
+      run: |
+        pdm add -dG dev bandit[toml]
+        pdm run bandit -r rankme/
+
+  pre-commit:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install pre-commit
+      run: |
+        pip install pre-commit
+
+    - name: Run pre-commit hooks
+      run: |
+        pre-commit run --all-files
+      continue-on-error: true

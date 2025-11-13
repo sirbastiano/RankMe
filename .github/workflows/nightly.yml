@@ -1,0 +1,83 @@
+name: Nightly Tests
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  nightly-tests:
+    name: Nightly Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        pytorch-version: ["2.0.0", "2.1.0", "2.2.0", "latest"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install PyTorch ${{ matrix.pytorch-version }}
+      run: |
+        if [ "${{ matrix.pytorch-version }}" = "latest" ]; then
+          pdm add torch torchvision
+        else
+          pdm add torch==${{ matrix.pytorch-version }} torchvision
+        fi
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+
+    - name: Run extended test suite
+      run: |
+        pdm run pytest tests/ -v --cov=rankme --slow
+
+    - name: Run performance tests
+      run: |
+        pdm add -dG dev pytest-benchmark
+        pdm run python -m pytest tests/ -k benchmark
+      continue-on-error: true
+
+    - name: Test against dev dependencies
+      run: |
+        pdm add torch@git+https://github.com/pytorch/pytorch.git
+        pdm run pytest tests/ -x
+      continue-on-error: true
+
+  compatibility-check:
+    name: Backward Compatibility
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install minimum versions
+      run: |
+        # Test with minimum supported versions
+        pdm add torch==2.0.0 numpy==1.26.0
+        pdm install -G dev
+
+    - name: Run compatibility tests
+      run: |
+        pdm run pytest tests/ -v

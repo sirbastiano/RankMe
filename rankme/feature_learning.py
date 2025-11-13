@@ -41,7 +41,7 @@ class RankMe(StatelessMetric):
         >>> score = rankme(Z)
         >>> float(score)  # normalized entropy in [0, 1]
         0.93
-        
+
         >>> # Batched computation
         >>> Z_batch = torch.randn(8, 512, 128)
         >>> scores = rankme(Z_batch)  # shape (8,)
@@ -69,7 +69,7 @@ class RankMe(StatelessMetric):
 
         Returns:
             torch.Tensor: Scalar (unbatched) or shape (B,) (batched) RankMe score.
-            
+
         Raises:
             ValueError: If Z has invalid shape (not 2D or 3D).
         """
@@ -80,7 +80,7 @@ class RankMe(StatelessMetric):
             squeeze_back = False
         else:
             raise ValueError(
-                f'Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}'
+                f"Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}"
             )
 
         if self.detach:
@@ -112,9 +112,7 @@ class RankMe(StatelessMetric):
         else:
             base = torch.tensor(self.log_base, dtype=p.dtype, device=p.device)
             logp = p.log() / base.log()
-            norm = (
-                torch.tensor(D, dtype=p.dtype, device=p.device).log() / base.log()
-            )
+            norm = torch.tensor(D, dtype=p.dtype, device=p.device).log() / base.log()
 
         H = -(p * logp).sum(dim=1)  # (B,)
         score = H / norm  # normalized entropy in [0, 1]
@@ -124,24 +122,24 @@ class RankMe(StatelessMetric):
 
 class EffectiveRank(StatelessMetric):
     """Compute the effective rank of embedding matrices.
-    
+
     The effective rank is computed as the exponential of the Shannon entropy
     of the normalized singular value spectrum. This gives an intuitive measure
     of the number of 'effective' dimensions being used.
-    
+
     For a matrix with uniformly distributed singular values across D dimensions,
     the effective rank approaches D. For a rank-deficient matrix, it will be
     much smaller than the nominal rank.
-    
+
     Args:
         eps: Numerical floor to avoid log(0) and division by zero.
         center: If True, mean-center features before SVD.
         detach: If True, computes without tracking gradients.
-        
+
     Returns:
         torch.Tensor: Effective rank value(s). For input (N,D), returns scalar.
                       For input (B,N,D), returns shape (B,).
-                      
+
     Example:
         >>> import torch
         >>> from rankme.feature_learning import EffectiveRank
@@ -151,7 +149,7 @@ class EffectiveRank(StatelessMetric):
         >>> float(rank_value)  # typically close to min(N, D) for random matrices
         99.2
     """
-    
+
     def __init__(
         self,
         eps: float = 1e-12,
@@ -163,13 +161,13 @@ class EffectiveRank(StatelessMetric):
         self.eps = eps
         self.center = center
         self.detach = detach
-        
+
     def forward(self, Z: torch.Tensor) -> torch.Tensor:
         """Compute effective rank.
-        
+
         Args:
             Z: Embedding matrix of shape (N, D) or (B, N, D).
-            
+
         Returns:
             torch.Tensor: Effective rank value(s).
         """
@@ -180,46 +178,46 @@ class EffectiveRank(StatelessMetric):
             squeeze_back = False
         else:
             raise ValueError(
-                f'Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}'
+                f"Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}"
             )
-            
+
         if self.detach:
             Z = Z.detach()
-            
+
         if self.center:
             Z = Z - Z.mean(dim=1, keepdim=True)
-            
+
         # Compute singular values
         s = torch.linalg.svdvals(Z)  # (B, min(N, D))
-        
+
         # Normalize to probabilities
         s_sum = s.sum(dim=1, keepdim=True).clamp_min(self.eps)
         p = (s / s_sum).clamp_min(self.eps)
-        
+
         # Compute Shannon entropy and convert to effective rank
         entropy = -(p * p.log()).sum(dim=1)
         effective_rank = entropy.exp()
-        
+
         return effective_rank.squeeze(0) if squeeze_back else effective_rank
 
 
 class SpectralEntropy(StatelessMetric):
     """Compute the spectral entropy of embedding matrices.
-    
+
     This is the Shannon entropy of the normalized singular value spectrum,
     without the normalization by log(D) used in RankMe. This gives the
     raw entropy value in nats (natural log) or bits (log base 2).
-    
+
     Args:
         log_base: Base of logarithm. If None, uses natural log (entropy in nats).
                   If 2, gives entropy in bits.
         eps: Numerical floor to avoid log(0) and division by zero.
         center: If True, mean-center features before SVD.
         detach: If True, computes without tracking gradients.
-        
+
     Returns:
         torch.Tensor: Spectral entropy value(s).
-        
+
     Example:
         >>> import torch
         >>> from rankme.feature_learning import SpectralEntropy
@@ -229,7 +227,7 @@ class SpectralEntropy(StatelessMetric):
         >>> float(ent_value)
         6.64  # entropy in bits
     """
-    
+
     def __init__(
         self,
         log_base: Optional[float] = None,
@@ -243,13 +241,13 @@ class SpectralEntropy(StatelessMetric):
         self.eps = eps
         self.center = center
         self.detach = detach
-        
+
     def forward(self, Z: torch.Tensor) -> torch.Tensor:
         """Compute spectral entropy.
-        
+
         Args:
             Z: Embedding matrix of shape (N, D) or (B, N, D).
-            
+
         Returns:
             torch.Tensor: Spectral entropy value(s).
         """
@@ -260,29 +258,29 @@ class SpectralEntropy(StatelessMetric):
             squeeze_back = False
         else:
             raise ValueError(
-                f'Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}'
+                f"Z must have shape (N,D) or (B,N,D), got {tuple(Z.shape)}"
             )
-            
+
         if self.detach:
             Z = Z.detach()
-            
+
         if self.center:
             Z = Z - Z.mean(dim=1, keepdim=True)
-            
+
         # Compute singular values
         s = torch.linalg.svdvals(Z)  # (B, min(N, D))
-        
+
         # Normalize to probabilities
         s_sum = s.sum(dim=1, keepdim=True).clamp_min(self.eps)
         p = (s / s_sum).clamp_min(self.eps)
-        
+
         # Compute entropy
         if self.log_base is None:
             logp = p.log()
         else:
             base = torch.tensor(self.log_base, dtype=p.dtype, device=p.device)
             logp = p.log() / base.log()
-            
+
         entropy = -(p * logp).sum(dim=1)
-        
+
         return entropy.squeeze(0) if squeeze_back else entropy

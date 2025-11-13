@@ -1,14 +1,14 @@
 """Test configuration and shared fixtures."""
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
 
 
 @pytest.fixture
 def device():
     """Return the device to use for testing."""
-    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def small_embedding_2d():
     return torch.randn(100, 32)
 
 
-@pytest.fixture 
+@pytest.fixture
 def large_embedding_2d():
     """Larger 2D embedding matrix for testing."""
     torch.manual_seed(42)
@@ -91,5 +91,5 @@ def assert_tensor_close(actual, expected, rtol=1e-4, atol=1e-6):
 
 def assert_in_range(tensor, min_val, max_val):
     """Assert that tensor values are in the specified range."""
-    assert torch.all(tensor >= min_val), f'Some values are below {min_val}'
-    assert torch.all(tensor <= max_val), f'Some values are above {max_val}'
+    assert torch.all(tensor >= min_val), f"Some values are below {min_val}"
+    assert torch.all(tensor <= max_val), f"Some values are above {max_val}"

@@ -1,10 +1,11 @@
 import time
-import torch
-import torch.nn as nn
 from typing import Any, Dict, Optional, Tuple
 
-from rankme.base import StatelessMetric
+import torch
+import torch.nn as nn
 from thop import profile
+
+from rankme.base import StatelessMetric
 
 
 def _get_param_device(model: nn.Module) -> torch.device:
@@ -49,7 +50,7 @@ class ModelSizeMB(StatelessMetric):
         if include_buffers:
             for b in model.buffers():
                 total_bytes += b.numel() * b.element_size()
-        mb = total_bytes / (1024 ** 2)
+        mb = total_bytes / (1024**2)
         # return float MB
         return float(mb)
 
@@ -79,7 +80,9 @@ class Flops(StatelessMetric):
         # prepare input
         if example_input is None:
             if input_size is None:
-                raise ValueError("Either example_input or input_size must be provided to estimate FLOPs.")
+                raise ValueError(
+                    "Either example_input or input_size must be provided to estimate FLOPs."
+                )
             example_input = torch.rand(*input_size)
 
         if device is None:
@@ -90,12 +93,16 @@ class Flops(StatelessMetric):
         try:
             from thop import profile  # type: ignore
         except Exception as e:
-            raise RuntimeError("thop is required for FLOPs computation; install it with `pip install thop`. ") from e
+            raise RuntimeError(
+                "thop is required for FLOPs computation; install it with `pip install thop`. "
+            ) from e
 
         # prepare input for thop
         if example_input is None:
             if input_size is None:
-                raise ValueError("Either example_input or input_size must be provided to estimate FLOPs.")
+                raise ValueError(
+                    "Either example_input or input_size must be provided to estimate FLOPs."
+                )
             example_input = torch.rand(*input_size)
 
         if device is None:
@@ -103,7 +110,9 @@ class Flops(StatelessMetric):
         example_input = example_input.to(device)
 
         # thop.profile returns MACs in many versions; treat returned value as flops-like numeric
-        out = profile(model, inputs=(example_input,), custom_ops=custom_ops or {}, verbose=False)
+        out = profile(
+            model, inputs=(example_input,), custom_ops=custom_ops or {}, verbose=False
+        )
         if isinstance(out, tuple) and len(out) >= 1:
             macs = out[0]
         else:
@@ -244,11 +253,15 @@ class InferenceTime(StatelessMetric):
                 rows = h
                 cols = w
             else:
-                raise ValueError("input_size must be (B,C,H,W) or (C,H,W) when provided")
+                raise ValueError(
+                    "input_size must be (B,C,H,W) or (C,H,W) when provided"
+                )
 
         # require rows, cols, channels to be set now
         if rows is None or cols is None or channels is None:
-            raise ValueError("rows, cols and channels must be provided either via arguments or input_size")
+            raise ValueError(
+                "rows, cols and channels must be provided either via arguments or input_size"
+            )
 
         # create gaussian input with mean=0.0 and std=1.0 with shape (1, C, H, W)
         inp = torch.randn(1, channels, rows, cols)

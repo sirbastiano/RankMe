@@ -107,6 +107,25 @@ quick-test:
 fix: format lint
 	@echo "Auto-fixing code issues..."
 
+# CI/CD simulation
+ci-test:
+	@echo "Running CI-like test suite..."
+	pdm run pytest tests/ -v --cov=rankme --cov-report=xml --cov-report=term-missing
+
+ci-check: format-check lint type-check ci-test
+	@echo "All CI checks passed!"
+
+security-check:
+	@echo "Running security checks..."
+	pdm add -dG dev bandit[toml] safety
+	pdm run bandit -r rankme/
+	pdm run safety check
+
+benchmark:
+	@echo "Running performance benchmarks..."
+	pdm add -dG dev pytest-benchmark
+	pdm run pytest tests/ -k benchmark --benchmark-only
+
 # Help
 help:
 	@echo "Available commands:"
@@ -130,4 +149,8 @@ help:
 	@echo "  check            Run all checks (format, lint, type, test)"
 	@echo "  quick-test       Run quick test subset"
 	@echo "  fix              Auto-fix code issues"
+	@echo "  ci-test          Run CI-like test suite with coverage"
+	@echo "  ci-check         Run all CI checks"
+	@echo "  security-check   Run security analysis"
+	@echo "  benchmark        Run performance benchmarks"
 	@echo "  help             Show this help message"

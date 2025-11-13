@@ -1,0 +1,226 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [published]
+
+env:
+  PYTHON_VERSIONS: '["3.9", "3.10", "3.11", "3.12"]'
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        exclude:
+          # Exclude some combinations to reduce CI time
+          - os: windows-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.9"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+
+    - name: Lint with flake8
+      run: |
+        pdm run flake8 rankme tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        pdm run flake8 rankme tests --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+    - name: Format check with black
+      run: |
+        pdm run black --check rankme tests
+
+    - name: Import sorting check with isort
+      run: |
+        pdm run isort --check-only rankme tests
+
+    - name: Type checking with mypy
+      run: |
+        pdm run mypy rankme
+      continue-on-error: true
+
+    - name: Test with pytest
+      run: |
+        pdm run pytest tests/ -v --cov=rankme --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+        pdm add -dG dev bandit[toml] safety
+
+    - name: Run bandit security check
+      run: |
+        pdm run bandit -r rankme/ -f json -o bandit-report.json
+      continue-on-error: true
+
+    - name: Run safety check
+      run: |
+        pdm run safety check
+      continue-on-error: true
+
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev -G docs
+
+    - name: Build documentation
+      run: |
+        cd docs && pdm run sphinx-build -b html . _build/html
+      continue-on-error: true
+
+    - name: Upload docs artifact
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: documentation
+        path: docs/_build/html/
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install
+
+    - name: Build package
+      run: |
+        pdm build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  performance:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+        pdm add -dG dev pytest-benchmark memory-profiler
+
+    - name: Run benchmarks
+      run: |
+        pdm run python -m pytest tests/ -k benchmark --benchmark-only
+      continue-on-error: true
+
+  publish:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    needs: [test, security, build]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v4
+
+    - name: Install dependencies
+      run: |
+        pdm install
+
+    - name: Build package
+      run: |
+        pdm build
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        pdm publish

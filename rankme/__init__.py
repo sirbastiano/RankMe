@@ -10,7 +10,6 @@ with training pipelines and support for batched operations.
 """
 
 from rankme.base import BaseMetric
-from rankme.feature_learning import RankMe
 from rankme.classification import (
     Accuracy,
     F1Score,
@@ -18,31 +17,32 @@ from rankme.classification import (
     Precision,
     Recall,
 )
+from rankme.feature_learning import RankMe
 from rankme.regression import (
     MAE,
     MSE,
-    R2Score,
     RMSE,
+    R2Score,
 )
 
-__version__ = '0.1.0'
-__author__ = 'Roberto Del Prete'
-__email__ = 'roberto.delprete@example.com'
+__version__ = "0.1.0"
+__author__ = "Roberto Del Prete"
+__email__ = "roberto.delprete@example.com"
 
 __all__ = [
     # Base
-    'BaseMetric',
+    "BaseMetric",
     # Feature Learning
-    'RankMe',
+    "RankMe",
     # Classification
-    'Accuracy',
-    'F1Score',
-    'IoU',
-    'Precision',
-    'Recall',
+    "Accuracy",
+    "F1Score",
+    "IoU",
+    "Precision",
+    "Recall",
     # Regression
-    'MAE',
-    'MSE',
-    'R2Score',
-    'RMSE',
+    "MAE",
+    "MSE",
+    "R2Score",
+    "RMSE",
 ]
