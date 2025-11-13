@@ -1,6 +1,6 @@
 import time
 from collections import defaultdict
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Union, cast
 
 import torch
 import torch.nn as nn
@@ -29,7 +29,7 @@ class ModelBenchmark:
     and task-specific performance metrics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the benchmark suite with all available metrics."""
         # Network metrics (stateless)
         self.network_metrics = {
@@ -96,38 +96,38 @@ class ModelBenchmark:
         # Model size
         size_params = self.network_metrics["model_size_mb"](
             model, include_buffers=False
-        )
+        )  # type: ignore
         size_buffers = self.network_metrics["model_size_mb"](
             model, include_buffers=True
-        )
-        results["size_params_mb"] = size_params
-        results["size_total_mb"] = size_buffers
+        )  # type: ignore
+        results["size_params_mb"] = size_params  # type: ignore
+        results["size_total_mb"] = size_buffers  # type: ignore
 
         # FLOPs estimation
         try:
-            flops = self.network_metrics["flops"](model, input_size=input_size)
-            results["flops"] = flops
+            flops = self.network_metrics["flops"](model, input_size=input_size)  # type: ignore
+            results["flops"] = flops  # type: ignore
         except Exception as e:
-            results["flops"] = f"Error: {str(e)}"
+            results["flops"] = f"Error: {str(e)}"  # type: ignore
 
         # Precision bits
-        avg_bits = self.network_metrics["precision_bits"](model)
-        dtype_summary = self.network_metrics["precision_bits"].get_dtype_summary(model)
-        results["avg_precision_bits"] = avg_bits
-        results["dtype_summary"] = dtype_summary
+        avg_bits = self.network_metrics["precision_bits"](model)  # type: ignore
+        dtype_summary = self.network_metrics["precision_bits"].get_dtype_summary(model)  # type: ignore
+        results["avg_precision_bits"] = avg_bits  # type: ignore
+        results["dtype_summary"] = dtype_summary  # type: ignore
 
         # Inference time
         try:
             cpu_time, gpu_time = self.network_metrics["inference_time"](
                 model, input_size=input_size, **kwargs
             )
-            results["cpu_inference_time_ms"] = cpu_time * 1000
+            results["cpu_inference_time_ms"] = cpu_time * 1000  # type: ignore
             results["gpu_inference_time_ms"] = (
                 gpu_time * 1000 if not torch.isnan(torch.tensor(gpu_time)) else None
-            )
+            )  # type: ignore
         except Exception as e:
-            results["cpu_inference_time_ms"] = f"Error: {str(e)}"
-            results["gpu_inference_time_ms"] = None
+            results["cpu_inference_time_ms"] = f"Error: {str(e)}"  # type: ignore
+            results["gpu_inference_time_ms"] = None  # type: ignore
 
         return results
 
@@ -153,16 +153,16 @@ class ModelBenchmark:
             rankme_centered_score = self.feature_metrics["rankme_centered"](embeddings)
 
             if embeddings.dim() == 3:  # Batched
-                results["rankme_scores"] = rankme_score.tolist()
-                results["rankme_centered_scores"] = rankme_centered_score.tolist()
-                results["avg_rankme"] = rankme_score.mean().item()
-                results["avg_rankme_centered"] = rankme_centered_score.mean().item()
+                results["rankme_scores"] = rankme_score.tolist()  # type: ignore
+                results["rankme_centered_scores"] = rankme_centered_score.tolist()  # type: ignore
+                results["avg_rankme"] = rankme_score.mean().item()  # type: ignore
+                results["avg_rankme_centered"] = rankme_centered_score.mean().item()  # type: ignore
             else:  # Single batch
-                results["rankme_score"] = rankme_score.item()
-                results["rankme_centered_score"] = rankme_centered_score.item()
+                results["rankme_score"] = rankme_score.item()  # type: ignore
+                results["rankme_centered_score"] = rankme_centered_score.item()  # type: ignore
 
         except Exception as e:
-            results["feature_metrics_error"] = str(e)
+            results["feature_metrics_error"] = str(e)  # type: ignore
 
         return results
 
@@ -171,8 +171,8 @@ class ModelBenchmark:
         y_pred: torch.Tensor,
         y_true: torch.Tensor,
         num_classes: int,
-        task: str = "multiclass",
-        average: str = "macro",
+        task: Literal["binary", "multiclass", "multilabel"] = "multiclass",
+        average: Literal["micro", "macro", "weighted", "none"] = "macro",
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Benchmark classification metrics.
@@ -204,9 +204,9 @@ class ModelBenchmark:
         for metric_name, metric in metrics.items():
             try:
                 score = metric(y_pred, y_true)
-                results[metric_name] = score.item()
+                results[metric_name] = score.item()  # type: ignore
             except Exception as e:
-                results[f"{metric_name}_error"] = str(e)
+                results[f"{metric_name}_error"] = str(e)  # type: ignore
 
         return results
 
@@ -230,9 +230,9 @@ class ModelBenchmark:
         for metric_name, metric in self.regression_metrics.items():
             try:
                 score = metric(y_pred, y_true)
-                results[metric_name] = score.item()
+                results[metric_name] = score.item()  # type: ignore
             except Exception as e:
-                results[f"{metric_name}_error"] = str(e)
+                results[f"{metric_name}_error"] = str(e)  # type: ignore
 
         return results
 
@@ -246,8 +246,8 @@ class ModelBenchmark:
         y_true_reg: Optional[torch.Tensor] = None,
         num_classes: Optional[int] = None,
         input_size: Tuple[int, ...] = (1, 3, 224, 224),
-        classification_task: str = "multiclass",
-        classification_average: str = "macro",
+        classification_task: Literal["binary", "multiclass", "multilabel"] = "multiclass",
+        classification_average: Literal["micro", "macro", "weighted", "none"] = "macro",
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Run complete benchmark suite on a model.
@@ -281,13 +281,13 @@ class ModelBenchmark:
         # Network metrics (always computed)
         start_time = time.time()
         results["network"] = self.benchmark_network(model, input_size, **kwargs)
-        results["network"]["computation_time_s"] = time.time() - start_time
+        results["network"]["computation_time_s"] = time.time() - start_time  # type: ignore
 
         # Feature learning metrics (if embeddings provided)
         if embeddings is not None:
             start_time = time.time()
             results["feature_learning"] = self.benchmark_features(embeddings, **kwargs)
-            results["feature_learning"]["computation_time_s"] = time.time() - start_time
+            results["feature_learning"]["computation_time_s"] = time.time() - start_time  # type: ignore
 
         # Classification metrics (if classification data provided)
         if (
@@ -304,7 +304,7 @@ class ModelBenchmark:
                 classification_average,
                 **kwargs,
             )
-            results["classification"]["computation_time_s"] = time.time() - start_time
+            results["classification"]["computation_time_s"] = time.time() - start_time  # type: ignore
 
         # Regression metrics (if regression data provided)
         if y_pred_reg is not None and y_true_reg is not None:
@@ -312,7 +312,7 @@ class ModelBenchmark:
             results["regression"] = self.benchmark_regression(
                 y_pred_reg, y_true_reg, **kwargs
             )
-            results["regression"]["computation_time_s"] = time.time() - start_time
+            results["regression"]["computation_time_s"] = time.time() - start_time  # type: ignore
 
         return results
 

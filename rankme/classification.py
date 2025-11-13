@@ -161,7 +161,10 @@ class Precision(StatelessMetric):
             tp = ((preds == 1) & (target == 1)).sum().float()
             fp = ((preds == 1) & (target == 0)).sum().float()
             precision = tp / (tp + fp) if (tp + fp) > 0 else self.zero_division
-            return torch.tensor(precision, device=preds.device)
+            if isinstance(precision, torch.Tensor):
+                return precision.detach().clone()
+            else:
+                return torch.tensor(precision, device=preds.device, dtype=torch.float32)
 
         elif self.task in ["multiclass", "multilabel"]:
             return self._compute_multiclass_precision(preds, target)
@@ -276,7 +279,10 @@ class Recall(StatelessMetric):
             tp = ((preds == 1) & (target == 1)).sum().float()
             fn = ((preds == 0) & (target == 1)).sum().float()
             recall = tp / (tp + fn) if (tp + fn) > 0 else self.zero_division
-            return torch.tensor(recall, device=preds.device)
+            if isinstance(recall, torch.Tensor):
+                return recall.detach().clone()
+            else:
+                return torch.tensor(recall, device=preds.device, dtype=torch.float32)
 
         elif self.task in ["multiclass", "multilabel"]:
             return self._compute_multiclass_recall(preds, target)
@@ -467,7 +473,10 @@ class IoU(StatelessMetric):
             intersection = ((preds == 1) & (target == 1)).sum().float()
             union = ((preds == 1) | (target == 1)).sum().float()
             iou = intersection / union if union > 0 else self.zero_division
-            return torch.tensor(iou, device=preds.device)
+            if isinstance(iou, torch.Tensor):
+                return iou.detach().clone()
+            else:
+                return torch.tensor(iou, device=preds.device, dtype=torch.float32)
 
         elif self.task in ["multiclass", "multilabel"]:
             return self._compute_multiclass_iou(preds, target)
