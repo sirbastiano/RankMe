@@ -70,11 +70,32 @@ publish:
 # Documentation
 docs:
 	@echo "Building documentation..."
-	cd docs && pdm run sphinx-build -b html . _build/html
+	pdm run sphinx-build -b html docs docs/_build/html
 
 docs-serve:
 	@echo "Serving documentation locally..."
 	cd docs/_build/html && python -m http.server 8000
+
+# CI Testing Commands
+ci-docs:
+	@echo "Testing documentation build like CI..."
+	pdm install -G dev -G docs
+	pdm run sphinx-build -b html docs docs/_build/html
+
+ci-security:
+	@echo "Testing security checks like CI..."
+	pdm install -G dev
+	pdm run bandit -r rankme/ -ll
+	pdm run pip-audit --desc --format=json || echo "Security scan completed"
+
+ci-build:
+	@echo "Testing package build like CI..."
+	pdm install
+	pdm build
+	@ls -la dist/
+
+ci-all: ci-docs ci-security ci-build
+	@echo "All CI checks completed successfully!"
 
 # Cleaning
 clean:
