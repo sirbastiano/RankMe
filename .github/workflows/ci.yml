@@ -99,12 +99,12 @@ jobs:
 
     - name: Run bandit security check
       run: |
-        pdm run bandit -r rankme/ -f json -o bandit-report.json
+        pdm run bandit -r rankme/ -ll
       continue-on-error: true
 
     - name: Run safety check
       run: |
-        pdm run safety check
+        pdm run safety scan --json
       continue-on-error: true
 
   docs:
